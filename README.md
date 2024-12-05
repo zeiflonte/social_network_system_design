@@ -40,6 +40,8 @@ Social Network System Design for [course by System Design](https://balun.courses
 
 ## Basic calculations
 
+### RPS calculations
+
 RPS (write posts):
 
     Each user publishes 0.1 post per day
@@ -69,3 +71,63 @@ Total RPS:
 
     Read: 3379
     Write: 1031
+
+### Traffic calculations
+
+Traffic (write posts):
+
+    RPS = 12
+    upper bound schema size:
+    3 pictures = 10MB * 3 = 30 MB (server accepts not compressed yet) / take 1.5MB of memory after compression
+    3 picture url = 90 B
+    description = 200 B
+    location_tag (location name) = 100 B
+    Total (client-side compression): 1.5MB * 12 = 18 MB/s
+    Total (server-side compression): 30MB * 12 = 360 MB/s
+
+Traffic (read posts):
+
+    RPS = 1527
+    upper bound schema size:
+    per 1 post:
+    id = 8 B
+    3 pictures = 0.5MB * 3 = 1.5 MB
+    3x picture_url = 90B * 3 = 270 B
+    description = 200 B
+    location_tag (location name) = 100 B
+    reactions_count = 8 B
+    created_at = 8 B
+    Total: 1.5 MB * 1527 = 2291 MB/s ~= 2.3 GB/s
+    Total per 10 posts: 22910 MB/s ~= 23 GB/s
+
+Traffic (write reactions):
+
+    RPS = 926
+    upper bound schema size:
+    post_id = 8B
+    user_id = 8B
+    reaction_type = 1B
+    Total: 15742 B/s ~= 15 kB/s
+
+Traffic (write comments):
+
+    RPS = 93
+    post_id = 8B
+    user_id = 8B
+    text = 200B
+    Total: 20088 B/s = 20 kB/s
+
+Traffic (read comments):
+
+    RPS = 1852
+    per 1 comment:
+    post_id = 8B
+    author_id = 8B
+    text = 200B
+    Total: 400032 B/s
+    Total per 10 comments: 390 kB/s
+
+Total Traffic:
+
+    Read: 23 GB/s
+    Write: 18-360 MB/s
