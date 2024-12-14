@@ -131,3 +131,54 @@ Total Traffic:
 
     Read: 23 GB/s
     Write: 18-360 MB/s
+
+### Resource calculations
+
+Capacity:
+
+    18 MB/s * 84600s * 365 = 555 822 000 MB = 530 TB
+
+HDD:
+
+    Total RPS: 4410
+    HDD I/O operations: 100
+    4410 => 100 = 44 disks
+    
+    HDD disk throughput: 100 MB/s
+    23 GB/s => 100 MB/s = 230 disks
+
+    Capacity = 530 TB
+    Max HDD size is 32 TB
+    530 TB => 32 TB = 16 disks
+
+    230 disks by 2.3 TB (~ 3 TB)
+
+SSD sata:
+
+    Total RPS: 4410
+    SSD sata I/O operations: 1000
+    4410 => 1000 = 4 disks
+    
+    HDD disk throughput: 500 MB/s
+    23 GB/s => 500 MB/s = 46 disks
+
+    Capacity = 530 TB
+    Taken SSD size is 32 TB
+    530 TB => 32 TB = 16 disks
+
+    46 disks by 12 TB
+
+SSD (nVME):
+
+    Total RPS: 4410
+    SSD sata I/O operations: 10000
+    4410 => 10000 = 1 disk
+    
+    HDD disk throughput: 3 GB/s
+    23 GB/s => 3 GB/s = 8 disks
+
+    Capacity = 530 TB
+    Max SSD (nVME) size is 30 TB
+    530 TB => 30 TB = 18 disks
+
+    18 disks by 30 TB
