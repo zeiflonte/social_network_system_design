@@ -182,3 +182,10 @@ SSD (nVME):
     530 TB => 30 TB = 18 disks
 
     18 disks by 30 TB
+
+### Distributed data storage calculations:
+
+    PostgreSQL async RF (replication factor) 2 master-slave
+    Take SSD sata
+    2 disks by host = 23 shards * 2 = 46 hosts by 2 disks
+    Directory based sharding
