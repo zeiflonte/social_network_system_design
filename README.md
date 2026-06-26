@@ -189,3 +189,9 @@ SSD (nVME):
     Take SSD sata
     2 disks by host = 23 shards * 2 = 46 hosts by 2 disks
     Directory based sharding
+
+## C4 Component diagram
+
+<p align="center">
+    <img src="assets/c4-component-diagram.svg" />
+</p>
