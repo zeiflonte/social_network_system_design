@@ -1,0 +1,95 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+Person(user, "User")
+Container(lb, "Load Balancer", "HTTPS")
+System(webapp, "Web UI")
+
+System_Boundary(system, "Traveler Social Network") {
+    Container(gateway, "API Gateway", "Go", "Routing, auth, rate limiting")
+
+    Container(auth, "Auth Service", "Go", "Authentication")
+    ContainerDb(auth_db, "Redis", "Redis", "Sessions")
+
+    Container(users, "User Service", "Go", "User management")
+    ContainerDb(users_db, "PostgreSQL", "PostgreSQL", "Users")
+
+    Container(posts, "Post Service", "Go", "Posts")
+    ContainerDb(posts_db, "MongoDB", "MongoDB", "Posts")
+
+    Container(relations, "Relation Service", "Go", "Follow / Unfollow")
+    ContainerDb(relations_db, "Neo4j", "Neo4j", "Social graph")
+
+    Container(likes, "Like Service", "Go", "Likes")
+    ContainerDb(likes_db, "PostgreSQL", "PostgreSQL", "User likes")
+
+    Container(feed, "Feed Service", "Go", "Home timeline (engine)")
+    ContainerDb(feed_cache, "Redis", "Redis", "home_timeline, counters, pagination state")
+
+    Container(image, "Image Service", "Go", "Upload, processing, metadata, access control")
+    ContainerDb(image_meta_db, "MongoDB", "MongoDB", "Image metadata")
+
+    ContainerQueue(kafka, "Kafka", "Event Bus")
+}
+
+' =========================
+' External systems
+' =========================
+Container_Ext(s3, "S3 Storage", "Object Storage", "Image blobs")
+Container_Ext(cdn, "CDN", "Edge Network", "Image delivery")
+
+' =========================
+' USER ENTRY POINTS
+' =========================
+Rel(user, lb, "HTTPS")
+Rel(lb, webapp, "")
+Rel(webapp, gateway, "REST")
+
+Rel(user, cdn, "GET images (direct edge access)")
+
+' =========================
+' API LAYER
+' =========================
+Rel(gateway, auth, "REST/gRPC")
+Rel(gateway, users, "REST/gRPC")
+Rel(gateway, posts, "REST/gRPC")
+Rel(gateway, relations, "REST/gRPC")
+Rel(gateway, likes, "REST/gRPC")
+Rel(gateway, feed, "REST/gRPC")
+Rel(gateway, image, "REST/gRPC")
+
+' =========================
+' CORE SERVICES
+' =========================
+Rel(auth, auth_db, "sessions")
+Rel(users, users_db, "CRUD")
+
+Rel(posts, posts_db, "CRUD")
+Rel(relations, relations_db, "CRUD")
+Rel(likes, likes_db, "CRUD")
+
+' =========================
+' EVENT BUS
+' =========================
+Rel(posts, kafka, "PostCreated\nPostUpdated")
+Rel(relations, kafka, "FollowChanged")
+Rel(likes, kafka, "LikeChanged")
+
+' =========================
+' FEED ARCHITECTURE
+' =========================
+Rel(feed, kafka, "Consume events (Post/Like/Follow)")
+Rel(feed, feed_cache, "Read/write timeline (hot path)")
+Rel_D(feed, relations, "Load follow graph (fallback)")
+Rel_D(feed, posts, "Load posts by author IDs (fallback)")
+Rel_D(feed, feed_cache, "Rebuild timeline (async)")
+
+' =========================
+' IMAGE PIPELINE
+' =========================
+Rel(image, s3, "Upload / fetch objects")
+Rel(image, image_meta_db, "Store metadata")
+Rel(cdn, s3, "Origin fetch (cache miss)")
+Rel(image, cdn, "Purge / invalidate cache (admin API)")
+
+@enduml
